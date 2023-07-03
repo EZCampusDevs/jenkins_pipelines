@@ -1,61 +1,81 @@
 pipeline {
-  agent any
-  
-  stages {
+    agent any
 
-    stage('Test') {
+        stages {
 
-      steps {
+            stage('Build Env File') {
 
-        withCredentials([usernamePassword(credentialsId: 'MYSQL_ROOT', passwordVariable: 'ROOT_PASSWORD', usernameVariable: 'ROOT_USERNAME')]) {
-        withCredentials([usernamePassword(credentialsId: 'MYSQL_USER_PASS_1', passwordVariable: 'PASSWORD_1', usernameVariable: 'USERNAME_1')]) {
-        withCredentials([usernamePassword(credentialsId: 'MYSQL_USER_PASS_2', passwordVariable: 'PASSWORD_2', usernameVariable: 'USERNAME_2')]) {
-        withCredentials([usernamePassword(credentialsId: 'MYSQL_USER_PASS_3', passwordVariable: 'PASSWORD_3', usernameVariable: 'USERNAME_3')]) {
+                steps {
 
-            sshPublisher(
-                    publishers: [
-                    sshPublisherDesc(
-                        configName: '2GB_Glassfish_VPS',
-                        transfers: [
-                        sshTransfer(cleanRemote: false,
-                            excludes: '', 
-                            execCommand: '''
+                    withCredentials([usernamePassword(credentialsId: 'MYSQL_ROOT', passwordVariable: 'ROOT_PASSWORD', usernameVariable: 'ROOT_USERNAME')]) {
+                        withCredentials([usernamePassword(credentialsId: 'MYSQL_USER_PASS_1', passwordVariable: 'PASSWORD_1', usernameVariable: 'USERNAME_1')]) {
+                            withCredentials([usernamePassword(credentialsId: 'MYSQL_USER_PASS_2', passwordVariable: 'PASSWORD_2', usernameVariable: 'USERNAME_2')]) {
+                                withCredentials([usernamePassword(credentialsId: 'MYSQL_USER_PASS_3', passwordVariable: 'PASSWORD_3', usernameVariable: 'USERNAME_3')]) {
 
-                            cd pipeline_mysql_setup/MySQL
-                            
-                            chmod +x setup_docker.sh
 
-                            ROOT_PASSWORD="${ROOT_PASSWORD}" \
-                             MYSQL_USERNAME_1="${USERNAME_1}" \
-                             MYSQL_USERNAME_2="${USERNAME_2}" \
-                             MYSQL_USERNAME_3="${USERNAME_3}" \
-                             MYSQL_PASS_1="${PASSWORD_1}" \
-                             MYSQL_PASS_2="${PASSWORD_2}" \
-                             MYSQL_PASS_3="${PASSWORD_3}" \
-                             ./setup_docker.sh
+                                    writeFile file: './MySQL/env.sh', text: """#!/bin/sh
+ROOT_PASSWORD="${ROOT_PASSWORD}" 
+MYSQL_USERNAME_1="${USERNAME_1}" 
+MYSQL_USERNAME_2="${USERNAME_2}" 
+MYSQL_USERNAME_3="${USERNAME_3}" 
+MYSQL_USER_PASS_1="${PASSWORD_1}" 
+MYSQL_USER_PASS_2="${PASSWORD_2}" 
+MYSQL_USER_PASS_3="${PASSWORD_3}"
+"""
 
-                            ''', 
-                            execTimeout: 120000, 
-                            flatten: false,
-                            makeEmptyDirs: false,
-                            noDefaultExcludes: false,
-                            patternSeparator: '[, ]+', 
-                            remoteDirectory: 'pipeline_mysql_setup',
-                            remoteDirectorySDF: false,
-                            removePrefix: '',
-                            sourceFiles: 'MySQL/setup_docker.sh')
-                                ], 
+                                }
+                            }
+                        }
+                    }
+
+                }
+            }
+
+            stage('SSH Public And Scripts') {
+
+                steps {
+
+                    sshPublisher(
+                            publishers: [
+                            sshPublisherDesc(
+                                configName: '2GB_Glassfish_VPS',
+                                transfers: [
+                                sshTransfer(cleanRemote: false,
+                                    excludes: '',
+                                    execCommand: '''
+                                    cd pipeline_mysql_setup/MySQL
+                                    chmod +x setup_docker.sh
+                                    chmod +x env.sh
+                                    ./setup_docker.sh USE_LOG_FILE
+
+                                    rm -rf env.sh
+                                    ''',
+                                    execTimeout: 120000,
+                                    flatten: false,
+                                    makeEmptyDirs: false,
+                                    noDefaultExcludes: false,
+                                    patternSeparator: '[, ]+',
+                                    remoteDirectory: 'pipeline_mysql_setup',
+                                    remoteDirectorySDF: false,
+                                    removePrefix: '',
+                                    sourceFiles: 'MySQL/setup_docker.sh MySQL/env.sh')
+                                ],
                                 usePromotionTimestamp: false,
                                 useWorkspaceInPromotion: false,
-                                verbose: false)
+                                verbose: false
+                                    )
                                     ]
-                                    )  
-          
+                                    )
+                }
+            }
+
+
+            stage('Delete Env File') {
+
+                steps {
+                    sh 'rm -f ./MySQL/env.sh'
+                }
+
+            }
         }
-        }
-        }
-        }
-      }
-    }
-  }
 }

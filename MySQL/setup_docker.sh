@@ -75,10 +75,12 @@ for ((i=0; i<${#usernames[@]}; i++)); do
 
         echo "Creating MySQL user with name $username"
 
-        docker exec -it $CONTAINER_NAME mysql -uroot -p"${ROOT_PASSWORD}" -e "CREATE USER '${username}'@'%' IDENTIFIED BY '${password}';"
-        docker exec -it $CONTAINER_NAME mysql -uroot -p"${ROOT_PASSWORD}" -e "GRANT ALL PRIVILEGES ON ${DB_NAME}.* TO '${username}'@'%';"
+        docker exec $CONTAINER_NAME mysql -uroot -p"${ROOT_PASSWORD}" -e "CREATE USER '${username}'@'%' IDENTIFIED BY '${password}';"
+        docker exec $CONTAINER_NAME mysql -uroot -p"${ROOT_PASSWORD}" -e "GRANT ALL PRIVILEGES ON ${DB_NAME}.* TO '${username}'@'%';"
 
     else
+
+        echo "No environment variable set for ${usernames[i]}"
 
         exit 1
 
