@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 USE_LOG_FILE_ARGUMENT="USE_LOG_FILE"
 
@@ -28,6 +28,11 @@ if [ $# != 0 ]; then
 
 fi
 
+if [ -e "env.sh" ] && [ -x "env.sh" ]; then 
+
+    source "env.sh"
+
+fi
 
 DB_NAME="ezcampus_db"
 
@@ -51,7 +56,7 @@ if [[ ! -z "${ROOT_PASSWORD}" ]]; then
 
 else
 
-    echo "ROOT_PASSOWRD env var is not set, this is required!"
+    echo "ROOT_PASSWORD env var is not set, this is required!"
 
     exit 1
 
