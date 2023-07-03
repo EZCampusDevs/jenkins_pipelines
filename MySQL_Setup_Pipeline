@@ -1,0 +1,44 @@
+pipeline {
+  agent any
+  
+  stages {
+
+    stage('Test') {
+
+      steps {
+
+        withCredentials([usernamePassword(credentialsId: 'MYSQL_ROOT', passwordVariable: 'PASSWORD', usernameVariable: 'USERNAME')]) {
+
+            sshPublisher(
+                    publishers: [
+                    sshPublisherDesc(
+                        configName: '2GB_Glassfish_VPS',
+                        transfers: [
+                        sshTransfer(cleanRemote: false,
+                            excludes: '', 
+                            execCommand: '''
+
+                            echo "hello world from ${USERNAME}"
+
+                            ''', 
+                            execTimeout: 120000, 
+                            flatten: false,
+                            makeEmptyDirs: false,
+                            noDefaultExcludes: false,
+                            patternSeparator: '[, ]+', 
+                            remoteDirectory: '~',
+                            remoteDirectorySDF: false,
+                            removePrefix: '',
+                            sourceFiles: '')
+                                ], 
+                                usePromotionTimestamp: false,
+                                useWorkspaceInPromotion: false,
+                                verbose: false)
+                                    ]
+                                    )  
+          
+        }
+      }
+    }
+  }
+}
