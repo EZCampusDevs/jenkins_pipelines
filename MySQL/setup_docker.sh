@@ -16,7 +16,7 @@ if [ $# != 0 ]; then
          mkdir -p $log_dir
 
          log_file="$log_dir/mysql-jenkins-setup-log.out"
-         touch log_file
+         touch $log_file
 
          exec 3>&1 4>&2
          trap 'exec 2>&4 1>&3' 0 1 2 3
