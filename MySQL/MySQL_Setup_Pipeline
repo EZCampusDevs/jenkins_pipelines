@@ -68,43 +68,5 @@ MYSQL_USER_PASS_3="${PASSWORD_3}"
                 }
             }
 
-
-            stage('Create MySQL users') {
-
-                steps {
-
-                    sshPublisher(
-                            publishers: [
-                            sshPublisherDesc(
-                                configName: '2GB_Glassfish_VPS',
-                                transfers: [
-                                sshTransfer(cleanRemote: false,
-                                    excludes: '',
-                                    execCommand: '''
-                                    cd pipeline_mysql_setup/MySQL
-                                    ls
-                                    chmod +x env.sh
-                                    chmod +x setup_mysql_users.sh
-                                    ./setup_mysql_users.sh USE_LOG_FILE
-
-                                    ''',
-                                    execTimeout: 120000,
-                                    flatten: false,
-                                    makeEmptyDirs: false,
-                                    noDefaultExcludes: false,
-                                    patternSeparator: '[, ]+',
-                                    remoteDirectory: 'pipeline_mysql_setup',
-                                    remoteDirectorySDF: false,
-                                    removePrefix: '',
-                                    sourceFiles: 'MySQL/setup_mysql_users.sh MySQL/env.sh')
-                                ],
-                                usePromotionTimestamp: false,
-                                useWorkspaceInPromotion: false,
-                                verbose: false
-                                    )
-                                    ]
-                                    )
-                }
-            }
         }
 }
