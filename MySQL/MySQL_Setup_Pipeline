@@ -1,19 +1,19 @@
 pipeline {
     agent any
 
-    stages {
+        stages {
 
-        stage('Build Env File') {
+            stage('Build Env File') {
 
-            steps {
+                steps {
 
-                withCredentials([usernamePassword(credentialsId: 'MYSQL_ROOT', passwordVariable: 'ROOT_PASSWORD', usernameVariable: 'ROOT_USERNAME')]) {
-                    withCredentials([usernamePassword(credentialsId: 'MYSQL_USER_PASS_1', passwordVariable: 'PASSWORD_1', usernameVariable: 'USERNAME_1')]) {
-                        withCredentials([usernamePassword(credentialsId: 'MYSQL_USER_PASS_2', passwordVariable: 'PASSWORD_2', usernameVariable: 'USERNAME_2')]) {
-                            withCredentials([usernamePassword(credentialsId: 'MYSQL_USER_PASS_3', passwordVariable: 'PASSWORD_3', usernameVariable: 'USERNAME_3')]) {
+                    withCredentials([usernamePassword(credentialsId: 'MYSQL_ROOT', passwordVariable: 'ROOT_PASSWORD', usernameVariable: 'ROOT_USERNAME')]) {
+                        withCredentials([usernamePassword(credentialsId: 'MYSQL_USER_PASS_1', passwordVariable: 'PASSWORD_1', usernameVariable: 'USERNAME_1')]) {
+                            withCredentials([usernamePassword(credentialsId: 'MYSQL_USER_PASS_2', passwordVariable: 'PASSWORD_2', usernameVariable: 'USERNAME_2')]) {
+                                withCredentials([usernamePassword(credentialsId: 'MYSQL_USER_PASS_3', passwordVariable: 'PASSWORD_3', usernameVariable: 'USERNAME_3')]) {
 
 
-                                writeFile file: './MySQL/env.sh', text: """#!/bin/sh
+                                    writeFile file: './MySQL/env.sh', text: """#!/bin/sh
 
 # define the root password and usernames/passwords for MySQL
 ROOT_PASSWORD="${ROOT_PASSWORD}" 
@@ -44,6 +44,7 @@ for i in "${!usernames[@]}"; do
     fi
 done
 """
+
                                 }
                             }
                         }
@@ -52,69 +53,50 @@ done
                 }
             }
 
-        stage('SSH Public And Scripts') {
+            stage('SSH Public And Scripts') {
 
-            steps {
+                steps {
 
-                sshPublisher(
-                        publishers: [
-                        sshPublisherDesc(
-                            configName: '2GB_Glassfish_VPS',
-                            transfers: [
-                            sshTransfer(cleanRemote: false,
-                                excludes: '',
-                                execCommand: '''
-                                cd pipeline_mysql_setup/MySQL
-                                chmod +x setup_docker.sh
-                                chmod +x env.sh
-                                ./setup_docker.sh USE_LOG_FILE
-                                ''',
-                                execTimeout: 120000,
-                                flatten: false,
-                                makeEmptyDirs: false,
-                                noDefaultExcludes: false,
-                                patternSeparator: '[, ]+',
-                                remoteDirectory: 'pipeline_mysql_setup',
-                                remoteDirectorySDF: false,
-                                removePrefix: '',
-                                sourceFiles: 'MySQL/setup_docker.sh MySQL/env.sh')
-                            ],
-                            usePromotionTimestamp: false,
-                            useWorkspaceInPromotion: false,
-                            verbose: false
-                                )
-                                ]
-                                )
-            }
-        }
+                    sshPublisher(
+                            publishers: [
+                            sshPublisherDesc(
+                                configName: '2GB_Glassfish_VPS',
+                                transfers: [
+                                sshTransfer(cleanRemote: false,
+                                    excludes: '',
+                                    execCommand: '''
+                                    cd pipeline_mysql_setup/MySQL
+                                    chmod +x setup_docker.sh
+                                    chmod +x env.sh
+                                    ./setup_docker.sh USE_LOG_FILE
 
-        stage('Run Env File') {
-
-            steps {
-                sshPublisher(
-                        publishers: [
-                        sshPublisherDesc(
-                            configName: '2GB_Glassfish_VPS',
-                            transfers: [
-                            sshTransfer(cleanRemote: false,
-                                execCommand: '''
-                                cd pipeline_mysql_setup/MySQL
-                                ./env.sh
-                                ''',
-                                execTimeout: 120000,
-                                remoteDirectory: 'pipeline_mysql_setup',
-                                remoteDirectorySDF: false,
-                                removePrefix: '',
-                                sourceFiles: 'MySQL/env.sh')
-                            ],
-                            usePromotionTimestamp: false,
-                            useWorkspaceInPromotion: false,
-                            verbose: false
-                                )
-                                ]
-                                )
+                                    ''',
+                                    execTimeout: 120000,
+                                    flatten: false,
+                                    makeEmptyDirs: false,
+                                    noDefaultExcludes: false,
+                                    patternSeparator: '[, ]+',
+                                    remoteDirectory: 'pipeline_mysql_setup',
+                                    remoteDirectorySDF: false,
+                                    removePrefix: '',
+                                    sourceFiles: 'MySQL/setup_docker.sh MySQL/env.sh')
+                                ],
+                                usePromotionTimestamp: false,
+                                useWorkspaceInPromotion: false,
+                                verbose: false
+                                    )
+                                    ]
+                                    )
+                }
             }
 
+
+            stage('Delete Env File') {
+
+                steps {
+                    sh 'rm -f ./MySQL/env.sh'
+                }
+
+            }
         }
-    }
 }
