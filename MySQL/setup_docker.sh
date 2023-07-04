@@ -65,7 +65,7 @@ fi
 
 # Creating a database
 echo "Creating a database..."
-docker exec -it $CONTAINER_NAME mysql -uroot -p$ROOT_PASSWORD -e "CREATE DATABASE $DB_NAME;"
+docker exec $CONTAINER_NAME mysql -uroot -p$ROOT_PASSWORD -e "CREATE DATABASE $DB_NAME;"
 
 # Checking if MySQL is Ready
 echo "Checking MySQL status..."
