@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 USE_LOG_FILE_ARGUMENT="USE_LOG_FILE"
 
@@ -15,7 +15,7 @@ if [ $# != 0 ]; then
          log_dir="$HOME/log/jenkins-ssh"
          mkdir -p $log_dir
 
-         log_file="$log_dir/mysql-jenkins-setup-log.out"
+         log_file="$log_dir/mysql-users-setup.out"
          touch $log_file
 
          exec 3>&1 4>&2
