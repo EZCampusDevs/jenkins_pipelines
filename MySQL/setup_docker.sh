@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 
 USE_LOG_FILE_ARGUMENT="USE_LOG_FILE"
 
@@ -16,7 +16,7 @@ if [ $# != 0 ]; then
          mkdir -p $log_dir
 
          log_file="$log_dir/mysql-jenkins-setup-log.out"
-         touch log_file
+         touch $log_file
 
          exec 3>&1 4>&2
          trap 'exec 2>&4 1>&3' 0 1 2 3
@@ -30,7 +30,7 @@ fi
 
 if [ -e "env.sh" ] && [ -x "env.sh" ]; then 
 
-    source "env.sh"
+    . ./env.sh
 
 fi
 
@@ -48,11 +48,11 @@ if docker ps -a --format '{{.Names}}' | grep -Eq "^${CONTAINER_NAME}$"; then
 fi
 
 
-if [[ ! -z "${ROOT_PASSWORD}" ]]; then
+if [ -n "${ROOT_PASSWORD}" ]; then
 
     echo "Docker run creating container with name: $CONTAINER_NAME"
 
-    docker run --name $CONTAINER_NAME -p 127.0.0.1:3306:3306 -e MYSQL_ROOT_PASSWORD=$ROOT_PASSWORD -d --network=EZnet mysql
+    docker run --name $CONTAINER_NAME -p 127.0.0.1:3306:3306 -e MYSQL_DATABASE="$DB_NAME" -e MYSQL_ROOT_PASSWORD="$ROOT_PASSWORD" -d --network=EZnet mysql
 
 else
 
@@ -62,6 +62,16 @@ else
 
 fi
 
+while true; do
+
+    echo "Waiting for MySQL to respond..."
+
+    docker exec $CONTAINER_NAME mysqladmin ping -uroot -p"${ROOT_PASSWORD}" &>/dev/null && break
+
+    sleep 1
+done
+
+echo "MySQL server is ready, creating users..."
 
 usernames=("MYSQL_USERNAME_1" "MYSQL_USERNAME_2" "MYSQL_USERNAME_3")
 passwords=("MYSQL_USER_PASS_1" "MYSQL_USER_PASS_2" "MYSQL_USER_PASS_3")
@@ -75,8 +85,8 @@ for ((i=0; i<${#usernames[@]}; i++)); do
 
         echo "Creating MySQL user with name $username"
 
-        docker exec $CONTAINER_NAME mysql -uroot -p${ROOT_PASSWORD} -e "CREATE USER '${username}'@'%' IDENTIFIED BY '${password}';"
-        docker exec $CONTAINER_NAME mysql -uroot -p${ROOT_PASSWORD} -e "GRANT ALL PRIVILEGES ON ${DB_NAME}.* TO '${username}'@'%';"
+        docker exec "$CONTAINER_NAME" mysql -uroot -p"${ROOT_PASSWORD}" -e "CREATE USER '${username}'@'%' IDENTIFIED BY '${password}';"
+        docker exec "$CONTAINER_NAME" mysql -uroot -p"${ROOT_PASSWORD}" -e "GRANT ALL PRIVILEGES ON ${DB_NAME}.* TO '${username}'@'%';"
 
     else
 

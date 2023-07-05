@@ -1,0 +1,60 @@
+pipeline {
+    agent any
+
+        stages {
+
+            stage('SSH Run Scraper') {
+
+                steps {
+
+                    sshPublisher(
+                            publishers: [
+                            sshPublisherDesc(
+                                configName: '2GB_Glassfish_VPS',
+                                transfers: [
+                                sshTransfer(cleanRemote: false,
+                                    excludes: '',
+                                    execCommand: '''
+                                    cd pipeline_run_dataascraper/Datascraper
+                                    chmod +x run_scraper.sh
+                                    ./run_scraper.sh USE_LOG_FILE
+
+                                    ''',
+                                    execTimeout: 120000,
+                                    flatten: false,
+                                    makeEmptyDirs: false,
+                                    noDefaultExcludes: false,
+                                    patternSeparator: '[, ]+',
+                                    remoteDirectory: 'pipeline_run_datascraper',
+                                    remoteDirectorySDF: false,
+                                    removePrefix: '',
+                                    sourceFiles: 'Datascraper/run_scraper.sh')
+                                ],
+                                usePromotionTimestamp: false,
+                                useWorkspaceInPromotion: false,
+                                verbose: false
+                                    )
+                                    ]
+                                    )
+                }
+            }
+
+        }
+
+    post {
+        always {
+            discordSend(
+                    description: currentBuild.result, 
+                    enableArtifactsList: false, 
+                    footer: '', 
+                    image: '', 
+                    link: '', 
+                    result: currentBuild.result, 
+                    scmWebUrl: '', 
+                    thumbnail: '', 
+                    title: env.JOB_BASE_NAME, 
+                    webhookURL: "${DISCORD_WEBHOOK_1}"
+                    )
+        }
+    }
+}
