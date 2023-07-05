@@ -48,7 +48,6 @@ MYSQL_USER_PASS_3="${PASSWORD_3}"
                                     chmod +x env.sh
                                     ./setup_docker.sh USE_LOG_FILE
 
-                                    rm -rf env.sh
                                     ''',
                                     execTimeout: 120000,
                                     flatten: false,
@@ -69,13 +68,5 @@ MYSQL_USER_PASS_3="${PASSWORD_3}"
                 }
             }
 
-
-            stage('Delete Env File') {
-
-                steps {
-                    sh 'rm -f ./MySQL/env.sh'
-                }
-
-            }
         }
 }
