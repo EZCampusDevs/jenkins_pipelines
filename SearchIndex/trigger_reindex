@@ -1,0 +1,34 @@
+
+pipeline {
+    agent any
+
+        stages {
+
+            stage('Call Trigger Endpoint') {
+
+                steps {
+
+                    sh 'curl https://search.ezcampus.org/searchIndex/index/trigger'
+                    
+                }
+            }
+
+        }
+
+    post {
+        always {
+            discordSend(
+                    description: currentBuild.result, 
+                    enableArtifactsList: false, 
+                    footer: '', 
+                    image: '', 
+                    link: '', 
+                    result: currentBuild.result, 
+                    scmWebUrl: '', 
+                    thumbnail: '', 
+                    title: env.JOB_BASE_NAME, 
+                    webhookURL: "${DISCORD_WEBHOOK_1}"
+                    )
+        }
+    }
+}
