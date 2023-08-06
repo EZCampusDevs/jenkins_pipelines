@@ -15,7 +15,7 @@ pipeline {
                                 sshTransfer(cleanRemote: false,
                                     excludes: '',
                                     execCommand: '''
-                                    cd pipeline_run_dataascraper/Datascraper
+                                    cd pipeline_run_datascraper/Datascraper
                                     chmod +x run_scraper.sh
                                     ./run_scraper.sh USE_LOG_FILE
 
