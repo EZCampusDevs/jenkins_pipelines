@@ -42,7 +42,7 @@ else
 
     echo "Pre run echo"
 
-    docker run --rm --network EZnet --name "$container_name" dscrape -s 0,1,3
+    docker run -itd --rm --network EZnet --name "$container_name" dscrape -s 0,1,3
 
     echo "Post run echo"
 
