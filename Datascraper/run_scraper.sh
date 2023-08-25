@@ -46,12 +46,12 @@ else
        --network EZnet \
        --name "$container_name" \
        -v "$HOME/log/dscrape":/home/data_scraper/logs \
-       -e db_host $DB_HOST \
-       -e db_name $DB_NAME \
-       -e username $DB_USERNAME \
-       -e password $DB_PASSWORD \
-       -e db_port $DB_PORT \
-       -e LOG_LEVEL 30 \
+       -e db_host="$DB_HOST" \
+       -e db_name="$DB_NAME" \
+       -e username="$DB_USERNAME" \
+       -e password="$DB_PASSWORD" \
+       -e db_port="$DB_PORT" \
+       -e LOG_LEVEL="30" \
        dscrape -s 0,1,3
 
     echo "Post run echo"
