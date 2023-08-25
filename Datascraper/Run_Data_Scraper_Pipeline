@@ -7,35 +7,47 @@ pipeline {
 
                 steps {
 
-                    sshPublisher(
-                            publishers: [
-                            sshPublisherDesc(
-                                configName: '2GB_Glassfish_VPS',
-                                transfers: [
-                                sshTransfer(cleanRemote: false,
-                                    excludes: '',
-                                    execCommand: '''
-                                    cd pipeline_run_datascraper/Datascraper
-                                    chmod +x run_scraper.sh
-                                    ./run_scraper.sh USE_LOG_FILE
+                    withCredentials([usernamePassword(credentialsId: 'MYSQL_USER_PASS_3', passwordVariable: 'PASSWORD_1', usernameVariable: 'USERNAME_1')]) {
 
-                                    ''',
-                                    execTimeout: 120000,
-                                    flatten: false,
-                                    makeEmptyDirs: false,
-                                    noDefaultExcludes: false,
-                                    patternSeparator: '[, ]+',
-                                    remoteDirectory: 'pipeline_run_datascraper',
-                                    remoteDirectorySDF: false,
-                                    removePrefix: '',
-                                    sourceFiles: 'Datascraper/run_scraper.sh')
-                                ],
-                                usePromotionTimestamp: false,
-                                useWorkspaceInPromotion: false,
-                                verbose: false
-                                    )
-                                    ]
-                                    )
+                        sshPublisher(
+                                publishers: [
+                                sshPublisherDesc(
+                                    configName: '2GB_Glassfish_VPS',
+                                    transfers: [
+                                    sshTransfer(cleanRemote: false,
+                                        excludes: '',
+                                        execCommand: '''
+                                        cd pipeline_run_datascraper/Datascraper
+
+                                        DB_USERNAME="${USERNAME_1}"
+                                        DB_PASSWORD="${PASSWORD_1}"
+                                        DB_NAME="ezcampus_db"
+                                        DB_PORT="3306"
+                                        DB_HOST="mysql-instance"
+
+                                        chmod +x run_scraper.sh
+                                        ./run_scraper.sh USE_LOG_FILE
+
+                                        ''',
+                                        execTimeout: 120000,
+                                        flatten: false,
+                                        makeEmptyDirs: false,
+                                        noDefaultExcludes: false,
+                                        patternSeparator: '[, ]+',
+                                        remoteDirectory: 'pipeline_run_datascraper',
+                                        remoteDirectorySDF: false,
+                                        removePrefix: '',
+                                        sourceFiles: 'Datascraper/run_scraper.sh')
+                                            ],
+                                            usePromotionTimestamp: false,
+                                            useWorkspaceInPromotion: false,
+                                            verbose: false
+                                                )
+                                                ]
+                                                )
+                    }
+
+
                 }
             }
 
