@@ -2,6 +2,23 @@ pipeline {
     agent any
 
         stages {
+            
+            stage('Build Env File') {
+        
+                steps {
+        
+                  withCredentials([usernamePassword(credentialsId: 'MYSQL_USER_PASS_3', passwordVariable: 'PASSWORD_1', usernameVariable: 'USERNAME_1')]) {
+        
+                    writeFile file: './variables.sh', text: """#!/bin/sh
+DB_USERNAME="${USERNAME_1}"
+DB_PASSWORD="${PASSWORD_1}"
+DB_NAME="ezcampus_db"
+DB_PORT="3306"
+DB_HOST="mysql-instance"
+"""
+                  }
+                }
+            }
 
             stage('SSH Run Scraper') {
 
@@ -17,17 +34,54 @@ pipeline {
                                     sshTransfer(cleanRemote: false,
                                         excludes: '',
                                         execCommand: '''
-                                        cd pipeline_run_datascraper/Datascraper
+                                        cd pipeline_run_datascraper/
+                                        
+                                        log_dir="$HOME/log/jenkins-ssh"
+                                        mkdir -p $log_dir
+                                
+                                        log_file="$log_dir/run-datascraper-log.out"
+                                        touch $log_file
+                                
+                                        exec 3>&1 4>&2
+                                        trap 'exec 2>&4 1>&3' 0 1 2 3
+                                        exec 1>$log_file 2>&1
+                                        
 
-                                        DB_USERNAME="${USERNAME_1}"
-                                        DB_PASSWORD="${PASSWORD_1}"
-                                        DB_NAME="ezcampus_db"
-                                        DB_PORT="3306"
-                                        DB_HOST="mysql-instance"
+                                        
+                                        chmod +x ./variables.sh
+                                        . ./variables.sh
+                                        rm -f ./variables.sh
 
-                                        chmod +x run_scraper.sh
-                                        ./run_scraper.sh USE_LOG_FILE
-
+                                        
+                                        
+                                        container_name="datascraper_prod"
+                                        
+                                        if docker ps --format '{{.Names}}' | grep -wq "$container_name"; then
+                                        
+                                            echo "Container $container_name already is running."
+                                        
+                                            exit 1
+                                        
+                                        else
+                                        
+                                            echo "Pre run echo"
+                                            echo "Log dir is mounted in $HOME/log/dscrape make sure all users have write permission for this folder"
+                                        
+                                            docker run --rm -itd --network EZnet \
+                                               --name "$container_name" \
+                                               -v "$HOME/log/dscrape":/home/data_scraper/logs \
+                                               -e LOG_DIR="/home/data_scraper/logs" \
+                                               -e LOG_LEVEL="10" \
+                                               -e db_host="$DB_HOST" \
+                                               -e db_name="$DB_NAME" \
+                                               -e username="$DB_USERNAME" \
+                                               -e password="$DB_PASSWORD" \
+                                               -e db_port="$DB_PORT" \
+                                               dscrape -s 0,1,3
+                                        
+                                            echo "Post run echo"
+                                        
+                                        fi
                                         ''',
                                         execTimeout: 120000,
                                         flatten: false,
@@ -37,7 +91,7 @@ pipeline {
                                         remoteDirectory: 'pipeline_run_datascraper',
                                         remoteDirectorySDF: false,
                                         removePrefix: '',
-                                        sourceFiles: 'Datascraper/run_scraper.sh')
+                                        sourceFiles: 'variables.sh')
                                             ],
                                             usePromotionTimestamp: false,
                                             useWorkspaceInPromotion: false,
