@@ -1,0 +1,125 @@
+
+def check_server_status(url, grep_response_match) {
+    def result
+    def heartbeat_response
+    def status_message
+
+    try {
+        result = sh(script: "curl -L '${url}'", returnStdout: true).trim()
+
+        heartbeat_response = sh(script: "echo '${result}' | grep '${grep_response_match}'", returnStatus: true)
+
+        if (heartbeat_response != null && heartbeat_response == 0) {
+            status_message = "$url: server is online"
+        } else {
+            status_message = "$url: server is offline"
+        }
+    } catch (Exception e) {
+        status_message = "$url: Pipeline error occurred: ${e.message}"
+    }
+
+    return [heartbeat_response, status_message]
+}
+
+
+
+pipeline {
+    agent any
+
+        stages {
+
+            stage('Check SearchIndex') {
+
+                steps {
+
+                    script {
+
+                        def result = check_server_status("https://search.ezcampus.org/searchIndex", "Is Online")
+                        def heartbeat_response = result[0]
+                        def status_message = result[1]
+
+                        println "Heartbeat response: $heartbeat_response"
+                        println "Status message: $status_message"
+
+                        catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
+
+                            if (heartbeat_response == null || heartbeat_response != 0) {
+
+                                env.BUILD_SHOULD_FAIL = "1"
+                                sh "exit 1"
+                            }
+                        }
+
+                        env.SERVER_STATUS_DESC = "$status_message"
+                    }
+                }
+            }
+
+            stage('Check FastAPI') {
+
+                steps {
+
+                    script {
+
+                        def result = check_server_status("https://aapi.ezcampus.org/", "I am alive")
+                        def heartbeat_response = result[0]
+                        def status_message = result[1]
+
+                        println "Heartbeat response: $heartbeat_response"
+                        println "Status message: $status_message"
+
+                        catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
+
+                            if (heartbeat_response == null || heartbeat_response != 0) {
+
+                                env.BUILD_SHOULD_FAIL = "1"
+                                sh "exit 1"
+                            }
+                        }
+
+                        env.SERVER_STATUS_DESC = "$env.SERVER_STATUS_DESC\n$status_message"
+                    }
+                }
+            }
+
+            stage("Fail check") {
+
+                steps {
+
+                    script {
+
+                        if (env.BUILD_SHOULD_FAIL == "1") {
+
+                            currentBuild.result = "FAILURE"
+                        }
+                    }
+                }
+            }
+        }
+
+
+    post {
+
+        always {
+
+            script {
+
+                if(currentBuild.result != "SUCCESS") {
+
+                    discordSend(
+                            description: env.SERVER_STATUS_DESC, 
+                            enableArtifactsList: false, 
+                            footer: '', 
+                            image: '', 
+                            link: '', 
+                            result: currentBuild.result, 
+                            scmWebUrl: '', 
+                            thumbnail: '', 
+                            title: env.JOB_BASE_NAME, 
+                            webhookURL: "${DISCORD_WEBHOOK_1}"
+                            )
+                }
+            }
+        }
+    }
+}
