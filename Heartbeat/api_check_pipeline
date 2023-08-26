@@ -61,7 +61,7 @@ pipeline {
 
                     script {
 
-                        def result = check_server_status("https://aapi.ezcampus.org/", "I am alive")
+                        def result = check_server_status("https://api.ezcampus.org/", "I am alive")
                         def heartbeat_response = result[0]
                         def status_message = result[1]
 
