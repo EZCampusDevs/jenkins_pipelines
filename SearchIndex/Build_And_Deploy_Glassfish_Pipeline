@@ -11,7 +11,7 @@ pipeline {
   "DB_PASSWORD" : "${MS1_PASSWORD}",
   "DB_HOST" : "mysql-instance",
   "DB_PORT" : "3306",
-  "DB_NAME" : "ezcampus_db"
+  "DB_NAME" : "ezcampus_db",
   "IS_DEBUG" : "false"
 }
 """
