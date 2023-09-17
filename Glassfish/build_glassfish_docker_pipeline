@@ -1,0 +1,85 @@
+pipeline { 
+    
+  agent any  
+
+    stages { 
+        
+        stage('Checkout Glassfish Docker From SCM') {
+            
+            steps {
+            
+                checkout scmGit(branches: [[name: '*/main']], extensions: [], userRemoteConfigs: [[url: 'https://github.com/EZCampusDevs/glassfish7-docker.git']])
+                
+            }
+        }
+
+
+        stage('Build Docker Container') { 
+
+            steps { 
+                
+                sshPublisher(
+                    publishers: [
+                        sshPublisherDesc(
+                            configName: '2GB_Glassfish_VPS',
+                            usePromotionTimestamp: false,
+                            useWorkspaceInPromotion: false,
+                            verbose: false,
+                            transfers: [
+                                sshTransfer(cleanRemote: false,
+                                excludes: '', 
+                                execCommand: '''
+                                    cd ~/pipeline_glassfish_build
+                                  
+                                  
+                                    log_dir="$HOME/log/jenkins-ssh"
+                                    mkdir -p "$log_dir"
+                            
+                                    log_file="$log_dir/pipeline_glassfish_build.out"
+                                    touch "$log_file"
+                            
+                                    exec 3>&1 4>&2
+                                    trap 'exec 2>&4 1>&3' 0 1 2 3
+                                    exec 1>"$log_file" 2>&1
+                                  
+                                    
+                                    
+                                    chmod +x ./build.sh
+                                    ./build.sh
+                                    
+                                  ''', 
+                                execTimeout: 120000, 
+                                flatten: false,
+                                makeEmptyDirs: false,
+                                noDefaultExcludes: false,
+                                patternSeparator: '[, ]+', 
+                                remoteDirectory: 'pipeline_glassfish_build',
+                                remoteDirectorySDF: false,
+                                removePrefix: '',
+                                sourceFiles: 'Dockerfile, build.sh, password_1.txt, password_2.txt')
+                            ]
+                        )
+                    ]
+                )  
+            }
+        }
+    }
+
+
+    post {
+        always {
+            discordSend(
+                description: currentBuild.result, 
+                enableArtifactsList: false, 
+                footer: '', 
+                image: '', 
+                link: '', 
+                result: currentBuild.result, 
+                scmWebUrl: '', 
+                thumbnail: '', 
+                title: env.JOB_BASE_NAME, 
+                webhookURL: "${DISCORD_WEBHOOK_1}"
+            )
+        }
+    }
+}
