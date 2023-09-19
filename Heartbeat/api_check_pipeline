@@ -1,19 +1,19 @@
 
 def check_server_status(url, grep_response_match) {
     def result
-    def heartbeat_response
+    def heartbeat_response = 1
     def status_message
 
     try {
         result = sh(script: "curl -L '${url}'", returnStdout: true).trim()
 
-        heartbeat_response = sh(script: "echo '${result}' | grep '${grep_response_match}'", returnStatus: true)
+            heartbeat_response = sh(script: "echo '${result}' | grep '${grep_response_match}'", returnStatus: true)
 
-        if (heartbeat_response != null && heartbeat_response == 0) {
-            status_message = "$url: server is online"
-        } else {
-            status_message = "$url: server is offline"
-        }
+            if (heartbeat_response != null && heartbeat_response == 0) {
+                status_message = "$url: server is online"
+            } else {
+                status_message = "$url: server is offline"
+            }
     } catch (Exception e) {
         status_message = "$url: Pipeline error occurred: ${e.message}"
     }
@@ -61,7 +61,7 @@ pipeline {
 
                     script {
 
-                        def result = check_server_status("https://api.ezcampus.org/", "I am alive")
+                        def result = check_server_status("https://api.ezcampus.org/", "EZCampus FastAPI")
                         def heartbeat_response = result[0]
                         def status_message = result[1]
 
