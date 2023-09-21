@@ -34,7 +34,7 @@ pipeline {
 
                     script {
 
-                        def result = check_server_status("https://search.ezcampus.org/searchIndex", "Is Online")
+                        def result = check_server_status("https://search.ezcampus.org/searchIndex", "EZCampus SearchIndex")
                         def heartbeat_response = result[0]
                         def status_message = result[1]
 
