@@ -118,6 +118,7 @@ DB_HOST="mysql-instance"
                                                         -e DB_PORT="$DB_PORT" \
                                                         -e DB_HOST="$DB_HOST" \
                                                         -e DB_NAME="$DB_NAME" \
+                                                        -e IS_DEBUG="false" \
                                                         -e LOG_DIR="./apps/searchIndex/logs" \
                                                         --network EZnet \
                                                         --name "${container}_${num}" \
