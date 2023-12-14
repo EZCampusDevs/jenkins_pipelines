@@ -28,7 +28,7 @@ DB_HOST="mysql-instance"
                     sshPublisher(
                         publishers: [
                             sshPublisherDesc(
-                                configName: '2GB_Glassfish_VPS',
+                                configName: "${SSH_SERVER}",
                                 usePromotionTimestamp: false,
                                 useWorkspaceInPromotion: false,
                                 verbose: false,

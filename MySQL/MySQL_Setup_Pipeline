@@ -38,7 +38,7 @@ MYSQL_USER_PASS_3="${PASSWORD_3}"
                     sshPublisher(
                             publishers: [
                             sshPublisherDesc(
-                                configName: '2GB_Glassfish_VPS',
+                                configName: "${SSH_SERVER}",
                                 transfers: [
                                 sshTransfer(cleanRemote: false,
                                     excludes: '',
