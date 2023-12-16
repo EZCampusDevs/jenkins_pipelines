@@ -71,7 +71,7 @@ DB_HOST="mysql-instance"
                                                --name "$container_name" \
                                                -v "$HOME/log/dscrape":/home/data_scraper/logs \
                                                -e LOG_DIR="/home/data_scraper/logs" \
-                                               -e LOG_LEVEL="30" \
+                                               -e LOG_LEVEL="20" \
                                                -e DB_HOST="$DB_HOST" \
                                                -e DB_NAME="$DB_NAME" \
                                                -e DB_USER="$DB_USERNAME" \
