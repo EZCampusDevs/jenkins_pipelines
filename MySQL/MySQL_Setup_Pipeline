@@ -120,7 +120,7 @@ MYSQL_USER_PASS_3="${PASSWORD_3}"
                                     
                                     # Creating a database
                                     echo "Creating a database..."
-                                    docker exec $CONTAINER_NAME mysql -uroot -p$ROOT_PASSWORD -e "CREATE DATABASE $DB_NAME;"
+                                    # docker exec $CONTAINER_NAME mysql -uroot -p$ROOT_PASSWORD -e "CREATE DATABASE $DB_NAME;"
                                     
                                     # Create a list of usernames and passwords
                                     usernames=("$MYSQL_USERNAME_1" "$MYSQL_USERNAME_2" "$MYSQL_USERNAME_3")
