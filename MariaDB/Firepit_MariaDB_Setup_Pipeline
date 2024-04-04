@@ -34,7 +34,7 @@ FIREPIT_PASSWORD="${PASSWORD_1}"
                                 sshTransfer(cleanRemote: false,
                                     excludes: '',
                                     execCommand: '''
-                                    cd pipeline_mysql_setup/MySQL
+                                    cd pipeline_mariadb_setup/MariaDB
                                     
 
 
@@ -145,10 +145,10 @@ FIREPIT_PASSWORD="${PASSWORD_1}"
                                     makeEmptyDirs: false,
                                     noDefaultExcludes: false,
                                     patternSeparator: '[, ]+',
-                                    remoteDirectory: 'pipeline_mysql_setup',
+                                    remoteDirectory: 'pipeline_mariadb_setup',
                                     remoteDirectorySDF: false,
                                     removePrefix: '',
-                                    sourceFiles: 'MySQL/setup_docker.sh MySQL/env.sh')
+                                    sourceFiles: 'MariaDB/env.sh')
                                 ],
                                 usePromotionTimestamp: false,
                                 useWorkspaceInPromotion: false,
