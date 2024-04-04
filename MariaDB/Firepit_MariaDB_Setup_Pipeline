@@ -120,7 +120,7 @@ FIREPIT_PASSWORD="${PASSWORD_1}"
 
                                     echo "Creating a database..."
 
-                                    docker exec $CONTAINER_NAME mariadb -uroot -p"$ROOT_PASSWORD" -e "CREATE DATABASE \`$DB_NAME\`;"
+                                    docker exec $CONTAINER_NAME mariadb -uroot -p"$ROOT_PASSWORD" -e "CREATE DATABASE \\`$DB_NAME\\`;"
                                     
 
                                     if [ ! -z "$FIREPIT_USERNAME" ] && [ ! -z "$FIREPIT_PASSWORD" ]; then
